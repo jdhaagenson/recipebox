@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ author.name }}</title>
+</head>
+
+<body>
+    <h3>About the Author</h3>
+    <h1>{{ author.name }}</h1>
+    <hr>
+    <h3>Bio</h3>
+    <p>{{ author.bio }}</p>
+    <hr>
+    <div>
+        <h3>Recipes by {{ author.name }}</h3>
+        {% for recipe in recipes %}
+            <li><a href="/recipe/{{ recipe.id }}">{{ recipe.title }}</a></li>
+        {% endfor %}
+    </div>
+
+
+
+</body>
+
+</html>

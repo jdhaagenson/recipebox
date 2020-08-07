@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ recipe.title }}</title>
+</head>
+
+<body>
+    <div>
+        <h1>How to make:<br> {{ recipe.title }}</h1>
+        <p><em>{{ recipe.description }}</em></p>
+        <p>Time required: <em>{{ recipe.time_required }}</em></p>
+        <hr>
+        <div>
+            <h4>Instructions</h4>
+            <pre>{{ recipe.instructions }}</pre>
+        </div>
+        <hr>
+        <div>
+            Created by,
+            <a href="/author/{{ recipe.author.id }}">{{ recipe.author }}</a>
+        </div>
+    </div>
+</body>
+
+</html>
