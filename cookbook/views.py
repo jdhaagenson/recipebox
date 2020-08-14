@@ -1,8 +1,9 @@
 from django.shortcuts import render
 from cookbook.models import Recipe
 from cookbook.models import Author
+from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import get_object_or_404, reverse, HttpResponseRedirect
-from cookbook.forms import AddRecipeForm, AddAuthorForm
+from cookbook.forms import AddRecipeForm, AddAuthorForm, LoginForm, SignupForm
 
 # Create your views here.
 
@@ -56,3 +57,36 @@ def author_form_view(request):
             return HttpResponseRedirect(reverse("homepage"))
     form = AddAuthorForm()
     return render(request, 'add_author.html', {'form': form})
+
+
+def signup_view(request):
+    if request.method == 'POST':
+        form = SignupForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+        User.objects.create(
+            username = data.get(),
+            password = data.get()
+        )
+    form = SignupForm()
+    return render(request, 'signup_page.html', {'form': form})
+
+
+def login_view(request):
+    if request.method == "POST":
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            user = authenticate(request, username=data.get('username'), password=data.get("password"))
+            if user:
+                login(request, user)
+                return HttpResponseRedirect(reverse("homepage"))
+            else:
+                return HttpResponseRedirect(reverse("error"))
+    form = LoginForm()
+    return render(request, "loginpage.html", {"form": form})
+
+
+def logout_view(request):
+
+    return render(request, 'logout_page.html', {'form': form})
