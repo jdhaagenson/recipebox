@@ -43,7 +43,7 @@ def recipe_form_view(request):
                 time_required=data.get('time_required'),
                 description=data.get('description')
             )
-            return HttpResponseRedirect(reverse("homepage"))
+            return HttpResponseRedirect(request.GET.get('next', reverse("homepage")))
     form = AddRecipeForm()
     return render(request, 'add_recipe.html', {'form': form})
 
@@ -63,7 +63,8 @@ def author_form_view(request):
                 user = user
             )
             author.save()
-            return HttpResponseRedirect(reverse("homepage"))
+            if request.user.is_staff:
+                return HttpResponseRedirect(request.GET.get('next', reverse("homepage")))
     form = AddAuthorForm()
     return render(request, 'add_author.html', {'form': form})
 
@@ -77,28 +78,30 @@ def login_view(request):
             if user:
                 login(request, user)
     #            return HttpResponseRedirect(reverse("homepage"))
-                return HttpResponseRedirect(request.GET.get('next', reverse("homepage")))
+                return HttpResponseRedirect(request.GET.get(next, reverse("homepage")))
     form = LoginForm()
     return render(request, "loginpage.html", {"form": form})
 
-def addauthor(request):
-    html = "generic_form.html"
-    form = AddAuthorForm()
-    if request.method == "POST":
-        form = AddAuthorForm(request.POST)
-        if form.is_valid():
-            data = form.cleaned_data
-            user = User.objects.create_user(
-                username=data.get('name')
-            )
-            author = Author.objects.create(
-                name=data.get('name'), bio=data.get('bio'), user=user)
-            author.save()
-        return HttpResponseRedirect(
-            request.GET.get('next', reverse('homepage')))
-    if request.user.is_staff:
-        return render(request, html, {"form": form})
-    return render(request, '')
+
+# @login_required()
+# def author_form_view(request):
+#     html = "generic_form.html"
+#     form = AddAuthorForm()
+#     if request.method == "POST":
+#         form = AddAuthorForm(request.POST)
+#         if form.is_valid():
+#             data = form.cleaned_data
+#             user = User.objects.create_user(
+#                 username=data.get('name')
+#             )
+#             author = Author.objects.create(
+#                 name=data.get('name'), bio=data.get('bio'), user=user)
+#             author.save()
+#         return HttpResponseRedirect(
+#             request.GET.get('next', reverse('homepage')))
+#     if request.user.is_staff:
+#         return render(request, html, {"form": form})
+#     return render(request, '')
 # def signup_form_view(request):
 #     if request.method == "POST":
 #         form = SignupForm(request.POST)
