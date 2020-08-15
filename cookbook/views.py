@@ -3,9 +3,8 @@ from cookbook.models import Recipe
 from cookbook.models import Author
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import get_object_or_404, reverse, HttpResponseRedirect
-from cookbook.forms import AddRecipeForm, AddAuthorForm, LoginForm, SignupForm
+from cookbook.forms import AddRecipeForm, AddAuthorForm, LoginForm
 from django.contrib.auth.decorators import login_required
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.models import User
 
 # Create your views here.
@@ -49,18 +48,21 @@ def recipe_form_view(request):
     return render(request, 'add_recipe.html', {'form': form})
 
 
-@staff_member_required
+@login_required
 def author_form_view(request):
     if request.method == 'POST':
         form = AddAuthorForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            Author.objects.create(
+            user = User.objects.create_user(
+                username=data.get('username'),
+                password=data.get('password'))
+            author = Author.objects.create(
                 name=data.get('name'),
                 bio=data.get('bio'),
-                username=data.get('username'),
-                password=data.get('password')
+                user = user
             )
+            author.save()
             return HttpResponseRedirect(reverse("homepage"))
     form = AddAuthorForm()
     return render(request, 'add_author.html', {'form': form})
@@ -75,32 +77,50 @@ def login_view(request):
             if user:
                 login(request, user)
     #            return HttpResponseRedirect(reverse("homepage"))
-                return HttpResponseRedirect(request.GET.get('next'), reverse("homepage"))
-
-            else:
-                return HttpResponseRedirect(reverse("error"))
+                return HttpResponseRedirect(request.GET.get('next', reverse("homepage")))
     form = LoginForm()
     return render(request, "loginpage.html", {"form": form})
 
-
-def signup_form_view(request):
+def addauthor(request):
+    html = "generic_form.html"
+    form = AddAuthorForm()
     if request.method == "POST":
-        form = SignupForm(request.POST)
+        form = AddAuthorForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            new_user = User.objects.create_user(
-                username=data.get('username'),
-                password=data.get('password')
+            user = User.objects.create_user(
+                username=data.get('name')
             )
-            login(request, new_user)
-            return HttpResponseRedirect(reverse("homepage"))
-
-    form = SignupForm()
-    return render(request, "signup_form", {"form": form})
+            author = Author.objects.create(
+                name=data.get('name'), bio=data.get('bio'), user=user)
+            author.save()
+        return HttpResponseRedirect(
+            request.GET.get('next', reverse('homepage')))
+    if request.user.is_staff:
+        return render(request, html, {"form": form})
+    return render(request, '')
+# def signup_form_view(request):
+#     if request.method == "POST":
+#         form = SignupForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             data = form.cleaned_data
+#             new_user = User.objects.create_user(
+#                 username=data.get('username'),
+#                 password=data.get('password')
+#             )
+#             new_user = authenticate(request, data.get('username', data.get('password')))
+#             login(request, new_user)
+#             return HttpResponseRedirect(request.GET.get(next, reverse("homepage")))
+#
+#     form = SignupForm()
+#     return render(request, "signup.html", {"form": form})
 
 
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("homepage"))
 
-    return render(request, 'loginpage.html', {'form': form})
+
+def error_view(request):
+    return HttpResponseRedirect(reverse("error"))

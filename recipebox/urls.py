@@ -17,16 +17,16 @@ from django.contrib import admin
 from django.urls import path
 from cookbook.views import recipe_form_view, \
     recipe_details, author_details, main, author_form_view, \
-    login_view, signup_form_view, logout_view
+    login_view, logout_view, error_view
 
 urlpatterns = [
     path('', main, name="homepage"),
-    path('signup/', signup_form_view, name='signup_form')
     path('loginpage/', login_view, name="login_view"),
-    path('logout/', logout_view, name="logout_view")
+    path('logout/', logout_view, name="logout_view"),
     path('addrecipe/', recipe_form_view, name="add_recipe"),
     path('addauthor/', author_form_view, name="add_author"),
     path('author/<int:author_id>', author_details, name="author_details"),
     path('recipe/<int:recipe_id>', recipe_details, name="recipe_details"),
     path('admin/', admin.site.urls),
+    path('error/', error_view, name="error"),
 ]
