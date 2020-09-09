@@ -1,5 +1,6 @@
 from cookbook.models import Author
 from django import forms
+from django.contrib.auth.forms import UserCreationForm
 
 
 class AddRecipeForm(forms.Form):
@@ -10,6 +11,26 @@ class AddRecipeForm(forms.Form):
     instructions = forms.CharField(widget=forms.Textarea)
 
 
-class AddAuthorForm(forms.Form):
-    name = forms.CharField(max_length=50)
-    bio = forms.CharField(widget=forms.Textarea)
+class AddAuthorForm(forms.ModelForm):
+    username = forms.CharField(max_length=50)
+    password = forms.CharField(widget=forms.PasswordInput)
+    class Meta:
+        model = Author
+        fields = [
+            'name',
+            'bio'
+        ]
+
+
+class LoginForm(forms.Form):
+    username = forms.CharField(max_length=240)
+    password = forms.CharField(widget=forms.PasswordInput)
+
+
+# class SignupForm(UserCreationForm):
+#     username = forms.CharField(max_length=240)
+#     password = forms.CharField(widget=forms.PasswordInput)
+#     class Meta:
+#         model = Author
+#         fields = ('username', 'password', 'name', 'bio')
+

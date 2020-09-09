@@ -1,8 +1,11 @@
 from django.shortcuts import render
 from cookbook.models import Recipe
 from cookbook.models import Author
+from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import get_object_or_404, reverse, HttpResponseRedirect
-from cookbook.forms import AddRecipeForm, AddAuthorForm
+from cookbook.forms import AddRecipeForm, AddAuthorForm, LoginForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
 # Create your views here.
 
@@ -27,6 +30,7 @@ def author_details(request, author_id):
                   {'author': author, 'recipes': recipes})
 
 
+@login_required
 def recipe_form_view(request):
     if request.method == 'POST':
         form = AddRecipeForm(request.POST)
@@ -39,20 +43,87 @@ def recipe_form_view(request):
                 time_required=data.get('time_required'),
                 description=data.get('description')
             )
-            return HttpResponseRedirect(reverse("homepage"))
+            return HttpResponseRedirect(request.GET.get('next', reverse("homepage")))
     form = AddRecipeForm()
     return render(request, 'add_recipe.html', {'form': form})
 
 
+@login_required
 def author_form_view(request):
     if request.method == 'POST':
         form = AddAuthorForm(request.POST)
         if form.is_valid():
             data = form.cleaned_data
-            Author.objects.create(
+            user = User.objects.create_user(
+                username=data.get('username'),
+                password=data.get('password'))
+            author = Author.objects.create(
                 name=data.get('name'),
-                bio=data.get('bio')
+                bio=data.get('bio'),
+                user = user
             )
-            return HttpResponseRedirect(reverse("homepage"))
+            author.save()
+            if request.user.is_staff:
+                return HttpResponseRedirect(request.GET.get('next', reverse("homepage")))
     form = AddAuthorForm()
     return render(request, 'add_author.html', {'form': form})
+
+
+def login_view(request):
+    if request.method == "POST":
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            data = form.cleaned_data
+            user = authenticate(request, username=data.get('username'), password=data.get("password"))
+            if user:
+                login(request, user)
+    #            return HttpResponseRedirect(reverse("homepage"))
+                return HttpResponseRedirect(request.GET.get(next, reverse("homepage")))
+    form = LoginForm()
+    return render(request, "loginpage.html", {"form": form})
+
+
+# @login_required()
+# def author_form_view(request):
+#     html = "generic_form.html"
+#     form = AddAuthorForm()
+#     if request.method == "POST":
+#         form = AddAuthorForm(request.POST)
+#         if form.is_valid():
+#             data = form.cleaned_data
+#             user = User.objects.create_user(
+#                 username=data.get('name')
+#             )
+#             author = Author.objects.create(
+#                 name=data.get('name'), bio=data.get('bio'), user=user)
+#             author.save()
+#         return HttpResponseRedirect(
+#             request.GET.get('next', reverse('homepage')))
+#     if request.user.is_staff:
+#         return render(request, html, {"form": form})
+#     return render(request, '')
+# def signup_form_view(request):
+#     if request.method == "POST":
+#         form = SignupForm(request.POST)
+#         if form.is_valid():
+#             form.save()
+#             data = form.cleaned_data
+#             new_user = User.objects.create_user(
+#                 username=data.get('username'),
+#                 password=data.get('password')
+#             )
+#             new_user = authenticate(request, data.get('username', data.get('password')))
+#             login(request, new_user)
+#             return HttpResponseRedirect(request.GET.get(next, reverse("homepage")))
+#
+#     form = SignupForm()
+#     return render(request, "signup.html", {"form": form})
+
+
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect(reverse("homepage"))
+
+
+def error_view(request):
+    return HttpResponseRedirect(reverse("error"))
