@@ -3,6 +3,7 @@ from cookbook.models import Recipe
 from cookbook.models import Author
 from django.contrib.auth import login, logout, authenticate
 from django.shortcuts import get_object_or_404, reverse, HttpResponseRedirect
+from django.http import HttpResponseForbidden
 from cookbook.forms import AddRecipeForm, AddAuthorForm, LoginForm
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
@@ -26,8 +27,16 @@ def recipe_details(request, recipe_id):
 def author_details(request, author_id):
     author = get_object_or_404(Author, pk=author_id)
     recipes = Recipe.objects.filter(author=author_id)
+    favorite_recipe = request.user.author.favorites.all()
     return render(request, 'author_details.html',
-                  {'author': author, 'recipes': recipes})
+                  {'author': author, 'recipes': recipes, 'favorites': favorite_recipe})
+    
+@login_required
+def favorites_view(request, favorites_id):
+    current_user = request.user
+    favorite = Recipe.objects.filter(id=favorites_id).first()
+    current_user.author.favorites.add(favorite)
+    return HttpResponseRedirect(request.META.get('HTTP_REFERER', '/'))
 
 
 @login_required
@@ -46,6 +55,35 @@ def recipe_form_view(request):
             return HttpResponseRedirect(request.GET.get('next', reverse("homepage")))
     form = AddRecipeForm()
     return render(request, 'add_recipe.html', {'form': form})
+
+
+@login_required
+def edit_recipe(request, recipe_id):
+    recipe = Recipe.objects.get(id=recipe_id)
+    if request.user.author.id == recipe.author.id or request.user.is_staff:
+        
+        if request.method == "POST":
+            form = AddRecipeForm(request.POST)
+            if form.is_valid():
+                data = form.cleaned_data
+                recipe.title = data["title"]
+                recipe.instructions = data["instructions"]
+                recipe.time_required = data["time_required"]
+                recipe.description = data["description"]
+                recipe.save()
+            return render(reverse("add_recipe", args=[recipe.id]))
+    
+    
+        data = {
+            "title": recipe.title,
+            "instructions": recipe.instructions,
+            "time_required": recipe.time_required,
+            "description": recipe.description
+        }
+        form = AddRecipeForm(initial=data)
+        return render(request, "add_recipe.html", {"form": form})
+    
+    return HttpResponseForbidden("You don't have permission to do this")
 
 
 @login_required

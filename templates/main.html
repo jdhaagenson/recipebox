@@ -30,6 +30,9 @@
             {% for recipe in recipes %}
             <div>
                 <p><a href="/recipe/{{ recipe.id }}">{{ recipe.title }}</a></p>
+                {% if request.user.is_authenticated%}
+                <a href="/favorites/{{recipe.id}}/"><button>Add to Favorites!</button></a>
+                {% endif %}
             </div>
             {% endfor %}
         </div>

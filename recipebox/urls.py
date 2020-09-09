@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path
 from cookbook.views import recipe_form_view, \
     recipe_details, author_details, main, author_form_view, \
-    login_view, logout_view, error_view
+    login_view, logout_view, error_view, edit_recipe, favorites_view
 
 urlpatterns = [
     path('', main, name="homepage"),
@@ -27,6 +27,8 @@ urlpatterns = [
     path('addauthor/', author_form_view, name="add_author"),
     path('author/<int:author_id>', author_details, name="author_details"),
     path('recipe/<int:recipe_id>', recipe_details, name="recipe_details"),
+    path('recipe/<int:recipe_id>/edit/', edit_recipe, name="edit_recipe" ),
+    path('favorites/<int:favorites_id>/', favorites_view, name="favorites"),
     path('admin/', admin.site.urls),
     path('error/', error_view, name="error"),
 ]
