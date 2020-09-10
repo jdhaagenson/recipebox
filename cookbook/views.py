@@ -62,26 +62,29 @@ def edit_recipe(request, recipe_id):
     recipe = Recipe.objects.get(id=recipe_id)
     if request.user.author.id == recipe.author.id or request.user.is_staff:
         
-        if request.method == "POST":
-            form = AddRecipeForm(request.POST)
-            if form.is_valid():
-                data = form.cleaned_data
-                recipe.title = data["title"]
-                recipe.instructions = data["instructions"]
-                recipe.time_required = data["time_required"]
-                recipe.description = data["description"]
-                recipe.save()
-            return render(reverse("add_recipe", args=[recipe.id]))
-    
-    
-        data = {
+        init_data = {
             "title": recipe.title,
+            "author": recipe.author,
             "instructions": recipe.instructions,
             "time_required": recipe.time_required,
             "description": recipe.description
         }
-        form = AddRecipeForm(initial=data)
-        return render(request, "add_recipe.html", {"form": form})
+        if request.method == "POST":
+            form = AddRecipeForm(request.POST, initial=init_data)
+            
+            if form.is_valid():
+                data = form.cleaned_data
+                recipe.title = data["title"]
+                recipe.author = data["author"]
+                recipe.instructions = data["instructions"]
+                recipe.time_required = data["time_required"]
+                recipe.description = data["description"]
+                recipe.save()
+            return HttpResponseRedirect(reverse("recipe_details", args=[recipe.id]))
+    
+    
+        form = AddRecipeForm(initial=init_data)
+        return render(request, "generic_form.html", {"form": form})
     
     return HttpResponseForbidden("You don't have permission to do this")
 

@@ -1,5 +1,6 @@
-<form action=“” method=“POST”>
+<form action="" method="post">
     {% csrf_token %}
-    {{Form.as_p}}
-    <input type=“submit” value=“Click to submit”> <a href=“/”>Return Home</a>
+    {{form.as_p}}
+    <input type="submit" value="Submit!">
 </form>
+    <a href="/">Return Home</a>
