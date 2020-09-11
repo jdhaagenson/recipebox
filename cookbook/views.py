@@ -27,7 +27,7 @@ def recipe_details(request, recipe_id):
 def author_details(request, author_id):
     author = get_object_or_404(Author, pk=author_id)
     recipes = Recipe.objects.filter(author=author_id)
-    favorite_recipe = request.user.author.favorites.all()
+    favorite_recipe = author.favorites.all()
     return render(request, 'author_details.html',
                   {'author': author, 'recipes': recipes, 'favorites': favorite_recipe})
     
