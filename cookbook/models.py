@@ -9,6 +9,7 @@ class Author(models.Model):
         User,
         on_delete=models.CASCADE
     )
+    favorites = models.ManyToManyField('Recipe', related_name="favorite", symmetrical=False, blank=True)
 
     def __str__(self):
         return self.name

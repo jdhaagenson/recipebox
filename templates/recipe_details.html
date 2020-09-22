@@ -21,6 +21,10 @@
         <div>
             Created by,
             <a href="/author/{{ recipe.author.id }}">{{ recipe.author }}</a>
+            <br>
+            {% if user.author.id == recipe.author.id or user.is_staff  %}
+                <a href="/recipe/{{recipe.id}}/edit/"><button>Edit Recipe</button></a>
+            {% endif %}
         </div>
     </div>
 </body>
